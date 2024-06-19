@@ -1,109 +1,12 @@
 "use client"
 import { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
+import { WebUrlSubmitter , PhoneNumberSubmitter , SmsSubmitter , SimpleTextSubmitter , DependencyManager } from './classes';
 import * as htmlToImage from "html-to-image";
-import emailjs from 'emailjs-com';
-
-class SubmitterClass {
-
-    constructor (mailContent,eMail){
-      this.mailContent = mailContent;
-      this.eMail = eMail;
-    }
-
-    static mailSenderFunction (qrCodeRef , eMail) {
-
-      let base64Image;
-
-      //html to png
-      htmlToImage
-      .toPng(qrCodeRef.current)
-      .then(function (dataUrl) {
-        base64Image = dataUrl;
-       
-      })
-      .catch(function (error) {
-        console.error("Error generating QR code:", error);
-      });
-
-
-      //sending mail
-      const templateParams = {
-        mail_to: eMail,
-        attachment: base64Image,
-      };
-    
-      emailjs.send('service_y2f03bx', 'template_d3o6f1p', templateParams, '2pfagknunisGtMP7_')
-        .then((response) => {
-          console.log('SUCCESS!', response.status, response.text);
-        }, (error) => {
-          console.error('FAILED...', error);
-        });
-
-    }
-
-    sendMail (qrCodeRef){
-      SubmitterClass.mailSenderFunction(qrCodeRef , this.eMail)
-    }
-
-    QrCodeData (){
-      return this.mailContent;
-    }
-
-}
-
-class WebUrlSubmitter extends SubmitterClass {
-    constructor (webUrl , eMail) {
-        super(`${webUrl}` , eMail);
-        this.webUrl = webUrl;
-    }
-}
-
-class PhoneNumberSubmitter extends SubmitterClass {
-    constructor(phoneNumber, eMail) {
-        super(`tel:${phoneNumber}` , eMail);
-        this.phoneNumber = phoneNumber;
-    }
-}
-
-class SmsSubmitter extends SubmitterClass {
-    constructor (phoneNumberForSendingSms, smsContent, eMail) {
-        super(`smsto:${phoneNumberForSendingSms}:${smsContent}` , eMail);
-        this.phoneNumberForSendingSms = phoneNumberForSendingSms;
-        this.smsContent = smsContent;
-      }
-}
-
-class SimpleTextSubmitter extends SubmitterClass {
-    constructor (simpleText , eMail) {
-        super(simpleText , eMail);
-        this.simpleText = simpleText;
-      }
-}
-
-class DependencyManager {
-
-  constructor() {
-    this.submitterClass = null;
-  }
-
-  addDependency (dependencyToBeInjected) {
-    this.submitterClass = dependencyToBeInjected;
-    return this.submitterClass;
-  }
-
-  clearDependency () {
-    this.submitterClass = null;
-  }
-
-}
 
 function QrCodeGeneratorComponent () {
-
     const [isTextFieldsReachesLimit , setIsTextFieldsReachesLimit] = useState(false);
-
     const [selectedOption , setSelectedOption] = useState("webUrl");
-
     const [formDatas , setFormDatas] = useState({
         webUrl : "",
         phoneNumber : "",
@@ -112,8 +15,8 @@ function QrCodeGeneratorComponent () {
         simpleText : "",
         eMail : "",
     });
-    
     const [qrCodeContent , setQrCodeContent] = useState();
+    const qrCodeRef = useRef(null);
 
     const variableFiller = (inputContent , inputField) => {
         setFormDatas (prevState => ({
@@ -121,8 +24,6 @@ function QrCodeGeneratorComponent () {
             [inputField] : inputContent,
         }));
     }
-
-    const qrCodeRef = useRef(null);
     
     useEffect(() => {
         if((formDatas.smsContent?.length > 160 && selectedOption === "sms") ||
@@ -132,7 +33,6 @@ function QrCodeGeneratorComponent () {
         } else {
             setIsTextFieldsReachesLimit(false)
         }
-
     },[formDatas.smsContent,formDatas.simpleText,selectedOption]);
     
     const dependencyManager = new DependencyManager();
@@ -149,15 +49,9 @@ function QrCodeGeneratorComponent () {
     
     const submitterClass = dependencyManager.addDependency(submitterTypeMap.get(selectedOption));
     setQrCodeContent(submitterClass.QrCodeData());
-
-    submitterClass.sendMail(qrCodeRef);
-    // not sure the following code block may cause a memory leak.
-
-/*       const submitterClass = submitterTypeMap.get(selectedOption);
-      const qrCodeData = submitterClass.QrCodeData();
-      setQrCodeContent(qrCodeData);
-      submitterClass.sendMail(); */
+    submitterClass.sendMail(); 
     }
+
 
     const downloadQRCode = () => {
       htmlToImage
@@ -321,12 +215,11 @@ return (
             {qrCodeContent && (
               <div>
                 <QRCode ref={qrCodeRef} value={`${qrCodeContent}`} />
-                <button onClick={downloadQRCode}>Download QR Code</button>
+                <button onClick={downloadQRCode} className="flex justify-center w-full mt-3 p-3 bg-sky-600 hover:bg-blue-700 text-white font-bold rounded">Download QR Code</button>
               </div>
             )}
         </div>
     </div>
 );
 }
-
 export default QrCodeGeneratorComponent;
