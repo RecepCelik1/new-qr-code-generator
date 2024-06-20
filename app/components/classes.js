@@ -7,10 +7,10 @@ class SubmitterClass {
       this.eMail = eMail;
     }
 
-    static mailSenderFunction(eMail) {
-          // sending mail
+    static mailSenderFunction(eMail , mailContent) {
           const templateParams = {
-            message: eMail,
+            userMail: eMail,
+            mailContent : mailContent,
             };
   
           emailjs.send('service_y2f03bx', 'template_d3o6f1p', templateParams, '2pfagknunisGtMP7_')
@@ -22,7 +22,7 @@ class SubmitterClass {
     }
 
     sendMail (){
-      SubmitterClass.mailSenderFunction(this.eMail)
+      SubmitterClass.mailSenderFunction(this.eMail , this.mailContent)
     }
 
     QrCodeData (){

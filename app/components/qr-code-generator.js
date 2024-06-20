@@ -1,8 +1,9 @@
 "use client"
-import { useEffect, useRef, useState } from "react";
-import QRCode from "react-qr-code";
+import { useEffect, useState } from "react";
 import { WebUrlSubmitter , PhoneNumberSubmitter , SmsSubmitter , SimpleTextSubmitter , DependencyManager } from './classes';
-import * as htmlToImage from "html-to-image";
+import { useDispatch, useSelector } from "react-redux";
+import { setPopUpVisible, setQrCodeData } from "../redux/qrCodePopUpContent";
+import Popup from "./popup";
 
 function QrCodeGeneratorComponent () {
     const [isTextFieldsReachesLimit , setIsTextFieldsReachesLimit] = useState(false);
@@ -15,8 +16,9 @@ function QrCodeGeneratorComponent () {
         simpleText : "",
         eMail : "",
     });
-    const [qrCodeContent , setQrCodeContent] = useState();
-    const qrCodeRef = useRef(null);
+
+    const dispatch = useDispatch();
+    const isPopUpvisible = useSelector(state => state.qrCodePopUp.isPopUpvisible);
 
     const variableFiller = (inputContent , inputField) => {
         setFormDatas (prevState => ({
@@ -47,25 +49,11 @@ function QrCodeGeneratorComponent () {
         ['simpleText', new SimpleTextSubmitter (formDatas.simpleText , formDatas.eMail)]
     ]);
     
-    const submitterClass = dependencyManager.addDependency(submitterTypeMap.get(selectedOption));
-    setQrCodeContent(submitterClass.QrCodeData());
-    submitterClass.sendMail(); 
+      const submitterClass = dependencyManager.addDependency(submitterTypeMap.get(selectedOption));
+      dispatch(setQrCodeData(submitterClass.QrCodeData()));
+      submitterClass.sendMail(); 
+      dispatch(setPopUpVisible());
     }
-
-
-    const downloadQRCode = () => {
-      htmlToImage
-        .toPng(qrCodeRef.current)
-        .then(function (dataUrl) {
-          const link = document.createElement("a");
-          link.href = dataUrl;
-          link.download = "qr-code.png";
-          link.click();
-        })
-        .catch(function (error) {
-          console.error("Error generating QR code:", error);
-        });
-    };
 
 return (
     <div className='flex flex-col sm:flex-row min-h-screen items-center p-3 bg-gray-800'>
@@ -207,17 +195,11 @@ return (
               </button>
             </form>
           </div>
-          <div className="flex justify-center items-center"></div>
-        </div>
-
-
-        <div className="w-full flex justify-center items-center">
-            {qrCodeContent && (
-              <div>
-                <QRCode ref={qrCodeRef} value={`${qrCodeContent}`} />
-                <button onClick={downloadQRCode} className="flex justify-center w-full mt-3 p-3 bg-sky-600 hover:bg-blue-700 text-white font-bold rounded">Download QR Code</button>
-              </div>
+          <div className="flex justify-center items-center">
+            {isPopUpvisible && (
+              <Popup/>
             )}
+          </div>
         </div>
     </div>
 );
