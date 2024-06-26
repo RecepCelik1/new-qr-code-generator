@@ -35,8 +35,13 @@ function Popup () {
             <IoCloseOutline size={24} />
           </button>
           <p className="mb-4 mt-3">Congratulations, the QR code has been successfully generated</p>
-          <div className="w-full flex justify-center items-center mb-3">
-            <QRCode ref={qrCodeRef} value={popUpContent.qrCodeData}/>
+          <div 
+          className="w-full flex justify-center items-center mb-3"
+          ref={qrCodeRef}
+          >
+            <div className="p-4 border-4 border-gray-400 bg-white">
+              <QRCode  value={popUpContent.qrCodeData}/>
+            </div>
           </div>
           <button 
           onClick={()=>downloadQRCode()}

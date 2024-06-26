@@ -175,7 +175,7 @@ return (
                 <div className='w-full flex justify-center items-center text-red-500 text-xs'>Maximum character limit exceeded !!</div>
               )}
 
-              <label>
+{/*               <label>
                 <h2 className='font-bold text-xl'>Email code to</h2>
                 <input
                   type='email'
@@ -185,13 +185,13 @@ return (
                   onChange={(e) => variableFiller(e.target.value , "eMail")}
                   value={formDatas.eMail}
                 />
-              </label>
+              </label> */}
               <button
                 type="submit"
                 className={`${isTextFieldsReachesLimit ? `bg-sky-300` : `bg-sky-600 hover:bg-blue-700`} text-white font-bold py-2 px-4 rounded`}
                 disabled={isTextFieldsReachesLimit}
               >
-                Submit
+                Generate Your QR Code
               </button>
             </form>
           </div>

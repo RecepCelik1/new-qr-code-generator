@@ -8,7 +8,7 @@ class SubmitterClass {
     }
 
     static mailSenderFunction(eMail , mailContent) {
-          const templateParams = {
+/*           const templateParams = {
             userMail: eMail,
             mailContent : mailContent,
             };
@@ -18,7 +18,7 @@ class SubmitterClass {
               console.log('SUCCESS!', response.status, response.text);
             }, (error) => {
               console.error('FAILED...', error);
-            });
+            }); */
     }
 
     sendMail (){
